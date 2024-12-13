@@ -30,21 +30,24 @@ export class LobeBedrockAI implements LobeRuntimeAI {
   region: string;
 
   constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
-    if (!(accessKeyId && accessKeySecret))
-      throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidBedrockCredentials);
-
     this.region = region ?? 'us-east-1';
-
-    this.client = new BedrockRuntimeClient({
-      credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: accessKeySecret,
-        sessionToken: sessionToken,
-      },
-      region: this.region,
-    });
+  
+    if (!(accessKeyId && accessKeySecret)) {
+      this.client = new BedrockRuntimeClient({
+        region: this.region,
+      });
+    } else {
+      this.client = new BedrockRuntimeClient({
+        credentials: {
+          accessKeyId: accessKeyId,
+          secretAccessKey: accessKeySecret,
+          sessionToken: sessionToken,
+        },
+        region: this.region,
+      });
+    }
   }
-
+  
   async chat(payload: ChatStreamPayload, options?: ChatCompetitionOptions) {
     if (payload.model.startsWith('meta')) return this.invokeLlamaModel(payload, options);
 
