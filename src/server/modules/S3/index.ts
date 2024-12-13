@@ -30,21 +30,30 @@ export class S3 {
   private readonly setAcl: boolean;
 
   constructor() {
-    if (!fileEnv.S3_ACCESS_KEY_ID || !fileEnv.S3_SECRET_ACCESS_KEY || !fileEnv.S3_BUCKET)
-      throw new Error('S3 environment variables are not set completely, please check your env');
-
+    if (!fileEnv.S3_BUCKET) {
+      throw new Error('S3_BUCKET environment variable is not set, please check your env');
+    }
+  
     this.bucket = fileEnv.S3_BUCKET;
     this.setAcl = fileEnv.S3_SET_ACL;
-
-    this.client = new S3Client({
-      credentials: {
-        accessKeyId: fileEnv.S3_ACCESS_KEY_ID,
-        secretAccessKey: fileEnv.S3_SECRET_ACCESS_KEY,
-      },
-      endpoint: fileEnv.S3_ENDPOINT,
-      forcePathStyle: fileEnv.S3_ENABLE_PATH_STYLE,
-      region: fileEnv.S3_REGION || DEFAULT_S3_REGION,
-    });
+  
+    if (fileEnv.S3_ACCESS_KEY_ID && fileEnv.S3_SECRET_ACCESS_KEY) {
+      this.client = new S3Client({
+        credentials: {
+          accessKeyId: fileEnv.S3_ACCESS_KEY_ID,
+          secretAccessKey: fileEnv.S3_SECRET_ACCESS_KEY,
+        },
+        endpoint: fileEnv.S3_ENDPOINT,
+        forcePathStyle: fileEnv.S3_ENABLE_PATH_STYLE,
+        region: fileEnv.S3_REGION || DEFAULT_S3_REGION,
+      });
+    } else {
+      this.client = new S3Client({
+        endpoint: fileEnv.S3_ENDPOINT,
+        forcePathStyle: fileEnv.S3_ENABLE_PATH_STYLE,
+        region: fileEnv.S3_REGION || DEFAULT_S3_REGION,
+      });
+    }
   }
 
   public async deleteFile(key: string) {
