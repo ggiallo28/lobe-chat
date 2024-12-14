@@ -2,6 +2,8 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
+
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
 import { LobeRuntimeAI } from '../BaseAI';
@@ -16,6 +18,7 @@ import {
   AWSBedrockLlamaStream,
   createBedrockStream,
 } from '../utils/streams';
+
 
 export interface LobeBedrockAIParams {
   accessKeyId?: string;
@@ -34,6 +37,7 @@ export class LobeBedrockAI implements LobeRuntimeAI {
   
     if (!(accessKeyId && accessKeySecret)) {
       this.client = new BedrockRuntimeClient({
+        credentials: fromNodeProviderChain(),
         region: this.region,
       });
     } else {
