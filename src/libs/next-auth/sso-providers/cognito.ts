@@ -67,6 +67,7 @@ const createCognitoProvider = ({ identityPoolId, userPoolId }: CognitoProviderOp
     clientId: authEnv.GENERIC_OIDC_CLIENT_ID ?? process.env.AUTH_GENERIC_OIDC_ID,
     clientSecret: authEnv.GENERIC_OIDC_CLIENT_SECRET ?? process.env.AUTH_GENERIC_OIDC_SECRET,
     issuer: authEnv.GENERIC_OIDC_ISSUER ?? process.env.AUTH_GENERIC_OIDC_ISSUER,
+    id: 'cognito',
     name: 'Cognito OIDC',
     profile: async (profile, tokens) => {
       const { access_token } = tokens; // Cognito access token
