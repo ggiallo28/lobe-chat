@@ -2,7 +2,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
+// import { getCognitoSessionDetailsSync, getCognitoCredentials } from "./auth";
 
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
@@ -19,13 +19,14 @@ import {
   createBedrockStream,
 } from '../utils/streams';
 
-
 export interface LobeBedrockAIParams {
   accessKeyId?: string;
   accessKeySecret?: string;
   region?: string;
   sessionToken?: string;
 }
+
+const identityPoolId = ""
 
 export class LobeBedrockAI implements LobeRuntimeAI {
   private client: BedrockRuntimeClient;
@@ -36,8 +37,9 @@ export class LobeBedrockAI implements LobeRuntimeAI {
     this.region = region ?? 'us-east-1';
   
     if (!(accessKeyId && accessKeySecret)) {
+      // const { userIdToken, userPoolId } = getCognitoSessionDetailsSync(identityPoolId);
       this.client = new BedrockRuntimeClient({
-        credentials: fromNodeProviderChain(),
+        // credentials: getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region),
         region: this.region,
       });
     } else {

@@ -3,6 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 import { authEnv } from '@/config/auth';
 
 import { ssoProviders } from './sso-providers';
+import { getAwsCredentials } from './aws';
 
 export const initSSOProviders = () => {
   return authEnv.NEXT_PUBLIC_ENABLE_NEXT_AUTH
@@ -20,10 +21,13 @@ export const initSSOProviders = () => {
 export default {
   callbacks: {
     // Note: Data processing order of callback: authorize --> jwt --> session
-    async jwt({ token, user }) {
+    async jwt({ token, account, user }) {
       // ref: https://authjs.dev/guides/extending-the-session#with-jwt
       if (user?.id) {
         token.userId = user?.id;
+      }
+      if (account?.access_token) {
+        token.accessToken = account.access_token;
       }
       return token;
     },
@@ -36,6 +40,23 @@ export default {
           session.user.id = (token.userId ?? session.user.id) as string;
         }
       }
+
+      if (token.accessToken) {
+        session.accessToken = token.accessToken;
+        try {
+          const awsCredentials = await getAwsCredentials(token.accessToken);
+          session.awsCredentials = {
+            accessKeyId: awsCredentials.accessKeyId,
+            secretAccessKey: awsCredentials.secretAccessKey,
+            sessionToken: awsCredentials.sessionToken,
+            expiration: awsCredentials.expiration,
+          };
+        } catch (error) {
+          console.error('Error fetching AWS credentials:', error);
+          session.awsCredentials = null;
+        }
+      }
+
       return session;
     },
   },
