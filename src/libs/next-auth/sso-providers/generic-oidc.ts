@@ -38,9 +38,9 @@ const getAwsCredentials = async (
   { identityPoolId, userPoolId }: CognitoProviderOptions
 ): Promise<{
   accessKeyId: string;
+  expiration: Date;
   secretAccessKey: string;
   sessionToken: string;
-  expiration: Date;
 }> => {
   const credentialsProvider = fromCognitoIdentityPool({
     identityPoolId,
