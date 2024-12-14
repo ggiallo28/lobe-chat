@@ -20,10 +20,13 @@ export const initSSOProviders = () => {
 export default {
   callbacks: {
     // Note: Data processing order of callback: authorize --> jwt --> session
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // ref: https://authjs.dev/guides/extending-the-session#with-jwt
       if (user?.id) {
         token.userId = user?.id;
+      }
+      if (account?.access_token) {
+        token.access_token = account.access_token;
       }
       return token;
     },
@@ -33,6 +36,7 @@ export default {
         console.log(session, token, user)
         if (user) {
           session.user.id = user.id;
+          session.user.jwt = token.access_token;
         } else {
           session.user.id = (token.userId ?? session.user.id) as string;
         }
