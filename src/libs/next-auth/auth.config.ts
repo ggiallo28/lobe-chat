@@ -47,9 +47,9 @@ export default {
           const awsCredentials = await getAwsCredentials(token.accessToken);
           session.awsCredentials = {
             accessKeyId: awsCredentials.accessKeyId,
+            expiration: awsCredentials.expiration,
             secretAccessKey: awsCredentials.secretAccessKey,
             sessionToken: awsCredentials.sessionToken,
-            expiration: awsCredentials.expiration,
           };
         } catch (error) {
           console.error('Error fetching AWS credentials:', error);

@@ -26,8 +26,6 @@ export interface LobeBedrockAIParams {
   sessionToken?: string;
 }
 
-const identityPoolId = ""
-
 export class LobeBedrockAI implements LobeRuntimeAI {
   private client: BedrockRuntimeClient;
 
