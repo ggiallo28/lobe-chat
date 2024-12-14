@@ -1,9 +1,11 @@
-import type { NextAuthConfig, Session, DefaultSession, JWT } from 'next-auth';
+import type { NextAuthConfig, Session, DefaultSession } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 
 import { authEnv } from '@/config/auth';
 
 import { ssoProviders } from './sso-providers';
 import { getAwsCredentials } from './aws';
+
 
 export const initSSOProviders = () => {
   return authEnv.NEXT_PUBLIC_ENABLE_NEXT_AUTH
