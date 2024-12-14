@@ -26,8 +26,8 @@ export const getAwsCredentials = async (jwtIdToken: string) => {
   const credentials = await credentialsProvider();
   return {
     accessKeyId: credentials.accessKeyId,
+    expiration: credentials.expiration,
     secretAccessKey: credentials.secretAccessKey,
     sessionToken: credentials.sessionToken,
-    expiration: credentials.expiration,
   };
 };
