@@ -25,8 +25,8 @@ interface AWSCredentials {
 }
 
 interface ExtendedSession extends Session {
-  token?: string;
   awsCredentials?: AWSCredentials | null;
+  token?: string;
   user: {
     id: string;
     token?: string;
@@ -34,8 +34,8 @@ interface ExtendedSession extends Session {
 }
 
 interface ExtendedJWT extends JWT {
-  userId?: string;
   accessToken?: string;
+  userId?: string;
 }
 
 // Notice this is only an object, not a full Auth.js instance
