@@ -53,9 +53,9 @@ const getAwsCredentials = async (
 
   return {
     accessKeyId: credentials.accessKeyId,
+    expiration: credentials.expiration,
     secretAccessKey: credentials.secretAccessKey,
     sessionToken: credentials.sessionToken,
-    expiration: credentials.expiration,
   };
 };
 
@@ -88,9 +88,9 @@ const provider = {
         awsCredentials: awsCredentials
           ? {
               accessKeyId: awsCredentials.accessKeyId,
+              expiration: awsCredentials.expiration,
               secretAccessKey: awsCredentials.secretAccessKey,
               sessionToken: awsCredentials.sessionToken,
-              expiration: awsCredentials.expiration,
             }
           : null,
         email: profile.email,
