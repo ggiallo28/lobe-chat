@@ -42,7 +42,8 @@ export default {
       }
 
       if (token.accessToken) {
-        session.accessToken = token.accessToken;
+        session.token = token.accessToken;
+        session.user.token = token.accessToken;
         try {
           const awsCredentials = await getAwsCredentials(token.accessToken);
           session.awsCredentials = {
