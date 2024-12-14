@@ -7,7 +7,6 @@ import { CommonProviderConfig } from './sso.config';
 
 export type AwsCredentials = {
   accessKeyId: string;
-  expiration: string;
   secretAccessKey: string;
   sessionToken: string;
 };
@@ -38,7 +37,6 @@ const getAwsCredentials = async (
   { identityPoolId, userPoolId }: CognitoProviderOptions
 ): Promise<{
   accessKeyId: string;
-  expiration: Date;
   secretAccessKey: string;
   sessionToken: string;
 }> => {
@@ -53,7 +51,6 @@ const getAwsCredentials = async (
 
   return {
     accessKeyId: credentials.accessKeyId,
-    expiration: credentials.expiration,
     secretAccessKey: credentials.secretAccessKey,
     sessionToken: credentials.sessionToken,
   };
@@ -88,7 +85,6 @@ const provider = {
         awsCredentials: awsCredentials
           ? {
               accessKeyId: awsCredentials.accessKeyId,
-              expiration: awsCredentials.expiration,
               secretAccessKey: awsCredentials.secretAccessKey,
               sessionToken: awsCredentials.sessionToken,
             }
