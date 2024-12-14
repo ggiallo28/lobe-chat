@@ -4,6 +4,8 @@ import { authEnv } from '@/config/auth';
 
 import { ssoProviders } from './sso-providers';
 import { getAwsCredentials } from './aws';
+import type { Session, DefaultSession } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 
 export const initSSOProviders = () => {
   return authEnv.NEXT_PUBLIC_ENABLE_NEXT_AUTH
@@ -17,6 +19,27 @@ export const initSSOProviders = () => {
     : [];
 };
 
+interface AWSCredentials {
+  accessKeyId: string;
+  expiration: string;
+  secretAccessKey: string;
+  sessionToken: string;
+}
+
+interface ExtendedSession extends Session {
+  token?: string;
+  awsCredentials?: AWSCredentials | null;
+  user: {
+    id: string;
+    token?: string;
+  } & DefaultSession['user'];
+}
+
+interface ExtendedJWT extends JWT {
+  userId?: string;
+  accessToken?: string;
+}
+
 // Notice this is only an object, not a full Auth.js instance
 export default {
   callbacks: {
@@ -29,9 +52,9 @@ export default {
       if (account?.access_token) {
         token.accessToken = account.access_token;
       }
-      return token;
+      return token as ExtendedJWT;
     },
-    async session({ session, token, user }) {
+    async session({ session, token, user }): Promise<ExtendedSession> {
       if (session.user) {
         // ref: https://authjs.dev/guides/extending-the-session#with-database
         if (user) {
@@ -41,11 +64,13 @@ export default {
         }
       }
 
-      if (token.accessToken) {
-        session.token = token.accessToken;
-        session.user.token = token.accessToken;
+      if ((token as ExtendedJWT).accessToken) {
+        const accessToken = (token as ExtendedJWT).accessToken;
+        session.token = accessToken;
+        session.user.token = accessToken;
+        
         try {
-          const awsCredentials = await getAwsCredentials(token.accessToken);
+          const awsCredentials = await getAwsCredentials(accessToken);
           session.awsCredentials = {
             accessKeyId: awsCredentials.accessKeyId,
             expiration: awsCredentials.expiration,
