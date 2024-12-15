@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { Session, JWT, NextAuthConfig } from 'next-auth';
 
 import { authEnv } from '@/config/auth';
 
@@ -33,11 +33,11 @@ export default {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.id = token.userId as string;
         // Use ID token for AWS Cognito authentication
-        session.user.jwt = token.id_token;
+        session.user.jwt = token.id_token as string | undefined;
       }
       return session;
     },
