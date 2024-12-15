@@ -2,7 +2,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
-// import { getCognitoSessionDetailsSync, getCognitoCredentials } from "./auth";
+import { getCognitoCredentials, getCognitoSessionDetails } from './auth';
 
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
@@ -24,6 +24,7 @@ export interface LobeBedrockAIParams {
   accessKeySecret?: string;
   region?: string;
   sessionToken?: string;
+  session?: any;
 }
 
 export class LobeBedrockAI implements LobeRuntimeAI {
@@ -31,24 +32,30 @@ export class LobeBedrockAI implements LobeRuntimeAI {
 
   region: string;
 
-  constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
+  constructor({ region, accessKeyId, accessKeySecret, sessionToken, session }: LobeBedrockAIParams = {}) {
     this.region = region ?? 'us-east-1';
   
-    if (!(accessKeyId && accessKeySecret)) {
-      // const { userIdToken, userPoolId } = getCognitoSessionDetailsSync(identityPoolId);
+    if (session) {
+      // Get credentials from Cognito
+      const { userIdToken, userPoolId, identityPoolId } = getCognitoSessionDetails(session);
+      const credentials = getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region);
+      
       this.client = new BedrockRuntimeClient({
-        // credentials: getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region),
+        credentials,
         region: this.region,
       });
-    } else {
+    } else if (accessKeyId && accessKeySecret) {
+      // Use provided credentials
       this.client = new BedrockRuntimeClient({
         credentials: {
-          accessKeyId: accessKeyId,
+          accessKeyId,
           secretAccessKey: accessKeySecret,
-          sessionToken: sessionToken,
+          sessionToken,
         },
         region: this.region,
       });
+    } else {
+      throw new Error('No credentials provided. Please provide either a session or AWS credentials.');
     }
   }
   

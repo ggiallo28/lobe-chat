@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig, Session } from 'next-auth';
 
 import { authEnv } from '@/config/auth';
 
@@ -28,18 +28,16 @@ export default {
       if (account?.access_token) {
         token.access_token = account.access_token;
       }
+      if (account?.id_token) {
+        token.id_token = account.id_token;  // Store Cognito ID token
+      }
       return token;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (session.user) {
-        // ref: https://authjs.dev/guides/extending-the-session#with-database
-        console.log(session, token, user)
-        if (user) {
-          session.user.id = user.id;
-          session.user.jwt = token.access_token;
-        } else {
-          session.user.id = (token.userId ?? session.user.id) as string;
-        }
+        session.user.id = token.userId as string;
+        // Use ID token for AWS Cognito authentication
+        session.user.jwt = token.id_token;
       }
       return session;
     },

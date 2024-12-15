@@ -7,6 +7,8 @@ declare module 'next-auth' {
   interface Session {
     user: {
       firstName?: string;
+      id: string;
+      jwt?: string;
     } & DefaultSession['user'];
   }
   interface User {
@@ -22,5 +24,7 @@ declare module '@auth/core/jwt' {
   /** Returned by the `jwt` callback and `auth`, when using JWT sessions */
   interface JWT {
     userId: string;
+    access_token?: string;
+    id_token?: string;  // For storing Cognito ID token
   }
 }
