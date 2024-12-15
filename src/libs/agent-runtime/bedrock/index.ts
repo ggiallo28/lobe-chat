@@ -23,8 +23,8 @@ export interface LobeBedrockAIParams {
   accessKeyId?: string;
   accessKeySecret?: string;
   region?: string;
-  sessionToken?: string;
   session?: any;
+  sessionToken?: string;
 }
 
 export class LobeBedrockAI implements LobeRuntimeAI {

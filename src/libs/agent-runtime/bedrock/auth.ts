@@ -33,8 +33,8 @@ export const getCognitoSessionDetails = (session: any) => {
   }
 
   return {
+    identityPoolId,
     userIdToken: session.user.jwt,
     userPoolId,
-    identityPoolId,
   };
 };
