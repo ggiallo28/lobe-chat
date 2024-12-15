@@ -1,4 +1,5 @@
-import type { Session, JWT, NextAuthConfig } from 'next-auth';
+import type { JWT } from '@auth/core/jwt';
+import type { Session, NextAuthConfig } from 'next-auth';
 
 import { authEnv } from '@/config/auth';
 
