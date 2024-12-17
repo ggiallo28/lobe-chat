@@ -1,5 +1,4 @@
-import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
-import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity';
+import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import type { NextAuthConfig } from 'next-auth';
 
 import { authEnv } from '@/config/auth';
@@ -30,27 +29,25 @@ export default {
         token.access_token = account.access_token;
       }
       if (account?.id_token) {
-        token.id_token = account.id_token; // Store Cognito ID token
+        token.id_token = account.id_token;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.userId as string;
-        session.user.jwt = token.access_token as string | undefined; // Use access_token instead of id_token
+        session.user.jwt = token.id_token as string | undefined; // Use id_token for Cognito
 
         if (session.user.jwt) {
           try {
-            const cognitoIdentityClient = new CognitoIdentityClient({
-              region: process.env.AWS_REGION || 'us-east-1',
-            });
+            const region = process.env.AWS_REGION || 'us-east-1';
+
             const credentials = await fromCognitoIdentityPool({
-              client: cognitoIdentityClient,
-              clientConfig: { region: process.env.AWS_REGION || 'us-east-1' },
+              clientConfig: { region },
               identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
               logins: {
-                [`"cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}"`]:
-                  token.id_token as string, // Use id_token for Cognito authentication
+                [`cognito-idp.${region}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
+                  session.user.jwt,
               },
             })();
             // src/types/next-auth.d.ts
