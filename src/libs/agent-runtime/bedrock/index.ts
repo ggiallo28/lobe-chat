@@ -2,6 +2,8 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
+import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
+import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity';
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
 import { LobeRuntimeAI } from '../BaseAI';
@@ -16,46 +18,31 @@ import {
   AWSBedrockLlamaStream,
   createBedrockStream,
 } from '../utils/streams';
-import { getCognitoCredentials, getCognitoSessionDetails } from './auth';
+import { getCognitoSessionDetails } from './auth';
 
 export interface LobeBedrockAIParams {
   accessKeyId?: string;
   accessKeySecret?: string;
   region?: string;
-  session?: any;
   sessionToken?: string;
 }
 
 export class LobeBedrockAI implements LobeRuntimeAI {
-  private client: BedrockRuntimeClient;
+  private client!: BedrockRuntimeClient;
 
   region: string;
 
-  constructor({
-    region,
+  constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
+    this.region = region ?? 'us-east-1';
+    this.initializeClient({ accessKeyId, accessKeySecret, region, sessionToken });
+  }
+
+  private async initializeClient({
     accessKeyId,
     accessKeySecret,
     sessionToken,
-    session,
-  }: LobeBedrockAIParams = {}) {
-    this.region = region ?? 'us-east-1';
-
-    if (session) {
-      console.log('usala');
-    }
-
-    const info = process.env.SESSION;
-
-    if (info) {
-      // Get credentials from Cognito
-      const { userIdToken, userPoolId, identityPoolId } = getCognitoSessionDetails(info);
-
-      this.client = new BedrockRuntimeClient({
-        credentials: getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region),
-        region: this.region,
-      });
-    } else if (accessKeyId && accessKeySecret) {
-      // Use provided credentials
+  }: LobeBedrockAIParams) {
+    if (accessKeyId && accessKeySecret) {
       this.client = new BedrockRuntimeClient({
         credentials: {
           accessKeyId,
@@ -65,9 +52,19 @@ export class LobeBedrockAI implements LobeRuntimeAI {
         region: this.region,
       });
     } else {
-      throw new Error(
-        'No credentials provided. Please provide either a session or AWS credentials.',
-      );
+      const cognitoIdentityClient = new CognitoIdentityClient({ region: this.region });
+      const credentials = fromCognitoIdentityPool({
+        client: cognitoIdentityClient,
+        identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
+        logins: {
+          [`cognito-idp.${this.region}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
+            await getCognitoSessionDetails({}).userIdToken,
+        },
+      });
+      this.client = new BedrockRuntimeClient({
+        credentials,
+        region: this.region,
+      });
     }
   }
 
