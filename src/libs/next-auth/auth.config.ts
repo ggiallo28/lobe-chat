@@ -49,7 +49,7 @@ export default {
               clientConfig: { region: process.env.AWS_REGION || 'us-east-1' },
               identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
               logins: {
-                [`cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
+                [`"cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}"`]:
                   token.id_token as string, // Use id_token for Cognito authentication
               },
             })();
