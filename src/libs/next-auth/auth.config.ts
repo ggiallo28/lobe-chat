@@ -22,10 +22,9 @@ export const initSSOProviders = () => {
 export default {
   callbacks: {
     // Note: Data processing order of callback: authorize --> jwt --> session
-    async jwt({ token, user, account }) {
-      // ref: https://authjs.dev/guides/extending-the-session#with-jwt
-      if (user?.id) {
-        token.userId = user?.id;
+    async jwt({ token, account }) {
+      if (account?.userId) {
+        token.userId = account.userId;
       }
       if (account?.access_token) {
         token.access_token = account.access_token;
@@ -38,25 +37,33 @@ export default {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.userId as string;
-        session.user.jwt = token.id_token as string | undefined;
+        session.user.jwt = token.access_token as string | undefined; // Use access_token instead of id_token
 
         if (session.user.jwt) {
-          const cognitoIdentityClient = new CognitoIdentityClient({
-            region: process.env.AWS_REGION || 'us-east-1',
-          });
-          const credentials = await fromCognitoIdentityPool({
-            client: cognitoIdentityClient,
-            clientConfig: { region: process.env.AWS_REGION || 'us-east-1' },
-            identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
-            logins: {
-              [`cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
-                session.user.jwt,
-            },
-          })();
-
-          session.user.accessKeyId = credentials.accessKeyId;
-          session.user.secretAccessKey = credentials.secretAccessKey;
-          session.user.sessionToken = credentials.sessionToken;
+          try {
+            const cognitoIdentityClient = new CognitoIdentityClient({
+              region: process.env.AWS_REGION || 'us-east-1',
+            });
+            const credentials = await fromCognitoIdentityPool({
+              client: cognitoIdentityClient,
+              clientConfig: { region: process.env.AWS_REGION || 'us-east-1' },
+              identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
+              logins: {
+                [`cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
+                  token.id_token as string, // Use id_token for Cognito authentication
+              },
+            })();
+            // src/types/next-auth.d.ts
+            session.user.accessKeyId = credentials.accessKeyId;
+            session.user.secretAccessKey = credentials.secretAccessKey;
+            session.user.sessionToken = credentials.sessionToken;
+          } catch (error) {
+            // Set empty values in case of error
+            session.user.accessKeyId = undefined;
+            session.user.secretAccessKey = undefined;
+            session.user.sessionToken = undefined;
+            console.error('Error getting AWS credentials:', error);
+          }
         }
       }
       return session;
