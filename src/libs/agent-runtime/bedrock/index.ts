@@ -52,7 +52,6 @@ export class LobeBedrockAI implements LobeRuntimeAI {
       });
     } else {
       const cognitoIdentityClient = new CognitoIdentityClient({ region: this.region });
-
       const credentials = fromCognitoIdentityPool({
         client: cognitoIdentityClient,
         clientConfig: { region: this.region },
