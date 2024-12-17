@@ -70,7 +70,11 @@ const getLlmOptionsFromPayload = (provider: string, payload: JWTPayload) => {
         sessionToken = payload?.awsSessionToken;
         region = payload?.awsRegion;
       }
-      return { accessKeyId, accessKeySecret, region, sessionToken };
+      const session = payload.session;
+      if (!session) {
+        throw new Error('AWS Cognito session is required for Bedrock');
+      }
+      return { accessKeyId, accessKeySecret, region, session, sessionToken };
     }
 
     case ModelProvider.Cloudflare: {

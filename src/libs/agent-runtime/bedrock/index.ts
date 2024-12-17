@@ -2,8 +2,6 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
-import { getCognitoCredentials, getCognitoSessionDetails } from './auth';
-
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
 import { LobeRuntimeAI } from '../BaseAI';
@@ -18,6 +16,7 @@ import {
   AWSBedrockLlamaStream,
   createBedrockStream,
 } from '../utils/streams';
+import { getCognitoCredentials, getCognitoSessionDetails } from './auth';
 
 export interface LobeBedrockAIParams {
   accessKeyId?: string;
@@ -32,16 +31,27 @@ export class LobeBedrockAI implements LobeRuntimeAI {
 
   region: string;
 
-  constructor({ region, accessKeyId, accessKeySecret, sessionToken, session }: LobeBedrockAIParams = {}) {
+  constructor({
+    region,
+    accessKeyId,
+    accessKeySecret,
+    sessionToken,
+    session,
+  }: LobeBedrockAIParams = {}) {
     this.region = region ?? 'us-east-1';
-  
+
     if (session) {
+      console.log('usala');
+    }
+
+    const info = process.env.SESSION;
+
+    if (info) {
       // Get credentials from Cognito
-      const { userIdToken, userPoolId, identityPoolId } = getCognitoSessionDetails(session);
-      const credentials = getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region);
-      
+      const { userIdToken, userPoolId, identityPoolId } = getCognitoSessionDetails(info);
+
       this.client = new BedrockRuntimeClient({
-        credentials,
+        credentials: getCognitoCredentials(userIdToken, userPoolId, identityPoolId, this.region),
         region: this.region,
       });
     } else if (accessKeyId && accessKeySecret) {
@@ -55,10 +65,12 @@ export class LobeBedrockAI implements LobeRuntimeAI {
         region: this.region,
       });
     } else {
-      throw new Error('No credentials provided. Please provide either a session or AWS credentials.');
+      throw new Error(
+        'No credentials provided. Please provide either a session or AWS credentials.',
+      );
     }
   }
-  
+
   async chat(payload: ChatStreamPayload, options?: ChatCompetitionOptions) {
     if (payload.model.startsWith('meta')) return this.invokeLlamaModel(payload, options);
 
