@@ -18,7 +18,6 @@ import {
   AWSBedrockLlamaStream,
   createBedrockStream,
 } from '../utils/streams';
-import { getCognitoSessionDetails } from './auth';
 
 export interface LobeBedrockAIParams {
   accessKeyId?: string;
@@ -53,14 +52,13 @@ export class LobeBedrockAI implements LobeRuntimeAI {
       });
     } else {
       const cognitoIdentityClient = new CognitoIdentityClient({ region: this.region });
+
       const credentials = fromCognitoIdentityPool({
         client: cognitoIdentityClient,
+        clientConfig: { region: this.region },
         identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
-        logins: {
-          [`cognito-idp.${this.region}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`]:
-            await getCognitoSessionDetails({}).userIdToken,
-        },
       });
+
       this.client = new BedrockRuntimeClient({
         credentials,
         region: this.region,
