@@ -2,8 +2,6 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
-import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
-import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity';
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
 import { LobeRuntimeAI } from '../BaseAI';
@@ -27,42 +25,24 @@ export interface LobeBedrockAIParams {
 }
 
 export class LobeBedrockAI implements LobeRuntimeAI {
-  private client!: BedrockRuntimeClient;
+  private client: BedrockRuntimeClient;
 
   region: string;
 
   constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
+    if (!(accessKeyId && accessKeySecret))
+      throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidBedrockCredentials);
+
     this.region = region ?? 'us-east-1';
-    this.initializeClient({ accessKeyId, accessKeySecret, region, sessionToken });
-  }
 
-  private async initializeClient({
-    accessKeyId,
-    accessKeySecret,
-    sessionToken,
-  }: LobeBedrockAIParams) {
-    if (accessKeyId && accessKeySecret) {
-      this.client = new BedrockRuntimeClient({
-        credentials: {
-          accessKeyId,
-          secretAccessKey: accessKeySecret,
-          sessionToken,
-        },
-        region: this.region,
-      });
-    } else {
-      const cognitoIdentityClient = new CognitoIdentityClient({ region: this.region });
-      const credentials = fromCognitoIdentityPool({
-        client: cognitoIdentityClient,
-        clientConfig: { region: this.region },
-        identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
-      });
-
-      this.client = new BedrockRuntimeClient({
-        credentials,
-        region: this.region,
-      });
-    }
+    this.client = new BedrockRuntimeClient({
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: accessKeySecret,
+        sessionToken: sessionToken,
+      },
+      region: this.region,
+    });
   }
 
   async chat(payload: ChatStreamPayload, options?: ChatCompetitionOptions) {

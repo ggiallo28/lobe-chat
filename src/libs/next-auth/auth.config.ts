@@ -60,16 +60,13 @@ export default {
           const credentials = await fromCognitoIdentityPool({
             clientConfig: { region },
             identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
-            logins: {
-              [cognitoIssuer]: session.user.jwt,
-            },
+            logins: { [cognitoIssuer]: session.user.jwt },
           })();
 
           session.user.accessKeyId = credentials.accessKeyId;
           session.user.secretAccessKey = credentials.secretAccessKey;
           session.user.sessionToken = credentials.sessionToken;
         } catch (error) {
-          // Set empty values in case of error
           session.user.accessKeyId = undefined;
           session.user.secretAccessKey = undefined;
           session.user.sessionToken = undefined;
