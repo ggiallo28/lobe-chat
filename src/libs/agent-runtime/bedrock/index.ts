@@ -3,6 +3,7 @@ import {
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
+import { getSession } from 'next-auth/react';
 
 import { LobeRuntimeAI } from '../BaseAI';
 import { AgentRuntimeErrorType } from '../error';
@@ -30,22 +31,25 @@ export class LobeBedrockAI implements LobeRuntimeAI {
   region: string;
 
   constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
-    if (!(accessKeyId && accessKeySecret))
-      throw AgentRuntimeError.createError(AgentRuntimeErrorType.InvalidBedrockCredentials);
-
     this.region = region ?? 'us-east-1';
 
-    this.client = new BedrockRuntimeClient({
-      credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: accessKeySecret,
-        sessionToken: sessionToken,
-      },
-      region: this.region,
-    });
+    if (accessKeyId && accessKeySecret) {
+      this.client = new BedrockRuntimeClient({
+        credentials: {
+          accessKeyId,
+          secretAccessKey: accessKeySecret,
+          sessionToken,
+        },
+        region: this.region,
+      });
+    } else {
+      this.client = new BedrockRuntimeClient({ region: this.region });
+    }
   }
 
   async chat(payload: ChatStreamPayload, options?: ChatCompetitionOptions) {
+    const session = await getSession(); // Retrieves the session on the client
+    console.log('session', session);
     if (payload.model.startsWith('meta')) return this.invokeLlamaModel(payload, options);
 
     return this.invokeClaudeModel(payload, options);
