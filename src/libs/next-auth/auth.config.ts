@@ -43,7 +43,7 @@ export default {
         } else {
           session.user.id = (token.userId ?? session.user.id) as string;
         }
-        session.user.jwt = token.access_token as string | undefined;
+        session.user.jwt = token.id_token as string | undefined;
 
         if (session.user.jwt) {
           try {
