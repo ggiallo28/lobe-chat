@@ -59,10 +59,12 @@ export default {
                 [cognitoIssuer]: session.user.jwt,
               },
             })();
-
             session.user.accessKeyId = credentials.accessKeyId;
             session.user.secretAccessKey = credentials.secretAccessKey;
             session.user.sessionToken = credentials.sessionToken;
+            token.accessKeyId = credentials.accessKeyId;
+            token.secretAccessKey = credentials.secretAccessKey;
+            token.sessionToken = credentials.sessionToken;
           } catch (error) {
             // Set empty values in case of error
             session.user.accessKeyId = undefined;
