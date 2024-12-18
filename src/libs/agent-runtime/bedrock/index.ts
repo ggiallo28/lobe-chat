@@ -2,6 +2,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelWithResponseStreamCommand,
 } from '@aws-sdk/client-bedrock-runtime';
+import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 import { getSession } from 'next-auth/react';
 
@@ -62,13 +63,21 @@ export class LobeBedrockAI implements LobeRuntimeAI {
   private async updateClientCredentials() {
     const session = await getSession();
     if (session && session.user) {
-      if (session.user.accessKeyId && session.user.secretAccessKey && session.user.sessionToken) {
-        this.client = new BedrockRuntimeClient({
-          credentials: {
-            accessKeyId: session.user.accessKeyId,
-            secretAccessKey: session.user.secretAccessKey,
-            sessionToken: session.user.sessionToken,
+      if (session.user.jwt) {
+        const region = process.env.AWS_REGION || 'us-east-1';
+        const userPoolId = process.env.AWS_USER_POOL_ID || '';
+
+        const cognitoIssuer = `cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+
+        const credentials = await fromCognitoIdentityPool({
+          clientConfig: { region },
+          identityPoolId: process.env.AWS_IDENTITY_POOL_ID || '',
+          logins: {
+            [cognitoIssuer]: session.user.jwt,
           },
+        })();
+        this.client = new BedrockRuntimeClient({
+          credentials: credentials,
           region: this.region,
         });
       } else {
