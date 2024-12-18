@@ -27,7 +27,7 @@ export interface LobeBedrockAIParams {
 
 export class LobeBedrockAI implements LobeRuntimeAI {
   private client: BedrockRuntimeClient;
-
+  private isFromSession = false;
   region: string;
 
   constructor({ region, accessKeyId, accessKeySecret, sessionToken }: LobeBedrockAIParams = {}) {
@@ -42,17 +42,41 @@ export class LobeBedrockAI implements LobeRuntimeAI {
         },
         region: this.region,
       });
+      this.isFromSession = false;
     } else {
       this.client = new BedrockRuntimeClient({ region: this.region });
+      this.isFromSession = true;
     }
   }
 
   async chat(payload: ChatStreamPayload, options?: ChatCompetitionOptions) {
-    const session = await getSession(); // Retrieves the session on the client
-    console.log('session', session);
+    if (this.isFromSession) {
+      await this.updateClientCredentials();
+    }
+
     if (payload.model.startsWith('meta')) return this.invokeLlamaModel(payload, options);
 
     return this.invokeClaudeModel(payload, options);
+  }
+
+  private async updateClientCredentials() {
+    const session = await getSession();
+    if (session && session.user) {
+      if (session.user.accessKeyId && session.user.secretAccessKey && session.user.sessionToken) {
+        this.client = new BedrockRuntimeClient({
+          credentials: {
+            accessKeyId: session.user.accessKeyId,
+            secretAccessKey: session.user.secretAccessKey,
+            sessionToken: session.user.sessionToken,
+          },
+          region: this.region,
+        });
+      } else {
+        throw new Error('Session does not contain valid AWS credentials.');
+      }
+    } else {
+      throw new Error('No valid session found. Please log in.');
+    }
   }
 
   private invokeClaudeModel = async (
