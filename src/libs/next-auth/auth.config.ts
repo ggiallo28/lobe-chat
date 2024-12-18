@@ -62,9 +62,9 @@ export default {
             session.user.accessKeyId = credentials.accessKeyId;
             session.user.secretAccessKey = credentials.secretAccessKey;
             session.user.sessionToken = credentials.sessionToken;
-            token.accessKeyId = credentials.accessKeyId;
-            token.secretAccessKey = credentials.secretAccessKey;
-            token.sessionToken = credentials.sessionToken;
+            process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
+            process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
+            process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
           } catch (error) {
             // Set empty values in case of error
             session.user.accessKeyId = undefined;
