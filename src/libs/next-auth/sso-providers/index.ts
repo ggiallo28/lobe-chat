@@ -4,6 +4,7 @@ import Authentik from './authentik';
 import AzureAD from './azure-ad';
 import Casdoor from './casdoor';
 import CloudflareZeroTrust from './cloudflare-zero-trust';
+import Cognito from './cognito';
 import GenericOIDC from './generic-oidc';
 import Github from './github';
 import Logto from './logto';
@@ -11,6 +12,7 @@ import MicrosoftEntraID from './microsoft-entra-id';
 import Zitadel from './zitadel';
 
 export const ssoProviders = [
+  Cognito,
   Auth0,
   Authentik,
   AzureAD,

@@ -40,6 +40,11 @@ declare global {
       ZITADEL_CLIENT_ID?: string;
       ZITADEL_CLIENT_SECRET?: string;
       ZITADEL_ISSUER?: string;
+
+      // Amazon Cognito
+      COGNITO_CLIENT_ID?: string;
+      COGNITO_CLIENT_SECRET?: string;
+      COGNITO_ISSUER?: string;
     }
   }
 }
@@ -194,6 +199,11 @@ export const getAuthConfig = () => {
       GENERIC_OIDC_CLIENT_SECRET: z.string().optional(),
       GENERIC_OIDC_ISSUER: z.string().optional(),
 
+      // Amazon Cognito
+      COGNITO_CLIENT_ID: z.string().optional(),
+      COGNITO_CLIENT_SECRET: z.string().optional(),
+      COGNITO_ISSUER: z.string().optional(),
+
       // ZITADEL
       ZITADEL_CLIENT_ID: z.string().optional(),
       ZITADEL_CLIENT_SECRET: z.string().optional(),
@@ -255,6 +265,11 @@ export const getAuthConfig = () => {
       GENERIC_OIDC_CLIENT_ID: process.env.GENERIC_OIDC_CLIENT_ID,
       GENERIC_OIDC_CLIENT_SECRET: process.env.GENERIC_OIDC_CLIENT_SECRET,
       GENERIC_OIDC_ISSUER: process.env.GENERIC_OIDC_ISSUER,
+
+      // Amazon Cognito
+      COGNITO_CLIENT_ID: process.env.GENERIC_OIDC_CLIENT_ID,
+      COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET,
+      COGNITO_ISSUER: process.env.COGNITO_ISSUER,
 
       // ZITADEL
       ZITADEL_CLIENT_ID: process.env.ZITADEL_CLIENT_ID,
