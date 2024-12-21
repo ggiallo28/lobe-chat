@@ -21,28 +21,29 @@ export default {
   callbacks: {
     // Note: Data processing order of callback: authorize --> jwt --> session
     async jwt({ token, user, account }) {
-      console.log('JWT Callback - User:', user); // Basic user info
-      console.log('JWT Callback - Account:', account); // Provider tokens and data
+      // console.log('JWT Callback - User:', user); // Basic user info
+      // console.log('JWT Callback - Account:', account); // Provider tokens and data
 
       if (user?.id) {
         token.userId = user.id;
       }
-      if (account?.access_token) {
-        token.access_token = account.access_token;
-      }
+      // if (account?.access_token) {
+      //   token.access_token = account.access_token;
+      // }
       if (account?.id_token) {
-        token.id_token = account.id_token;
+        token.id_token = account?.id_token ?? token.bearerToken;
       }
       return token;
     },
     async session({ session, token, user }) {
+      session.bearerToken = (token.id_token ?? session.bearerToken) as string;
       if (session.user) {
         if (user) {
           session.user.id = user.id;
         } else {
           session.user.id = (token.userId ?? session.user.id) as string;
         }
-        session.user.jwt = token.id_token as string | undefined;
+        // session.user.jwt = token.id_token as string | undefined;
 
         // if (session.user.jwt) {
         //   try {

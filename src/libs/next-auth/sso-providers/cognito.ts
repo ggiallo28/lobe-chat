@@ -4,12 +4,17 @@ import { authEnv } from '@/config/auth';
 
 import { CommonProviderConfig } from './sso.config';
 
+// const region = process.env.AWS_REGION;
+// const userPoolId = process.env.COGNITO_USER_POOL_ID;
+// const issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+
 const provider = {
   id: 'cognito',
   provider: CognitoProvider({
     clientId: authEnv.COGNITO_CLIENT_ID ?? process.env.COGNITO_CLIENT_ID,
     clientSecret: authEnv.COGNITO_CLIENT_SECRET ?? process.env.COGNITO_CLIENT_SECRET,
     issuer: authEnv.COGNITO_ISSUER ?? process.env.COGNITO_ISSUER,
+    // issuer: authEnv.COGNITO_ISSUER ?? issuer,
     ...CommonProviderConfig,
     authorization: {
       params: {
@@ -22,7 +27,7 @@ const provider = {
         email: profile.email,
         id: profile.sub,
         image: profile.picture,
-        name: profile.name,
+        name: profile.name ?? profile.email,
       };
     },
   }),
