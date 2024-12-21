@@ -22,14 +22,14 @@ const provider = {
         scope: 'openid email profile',
       },
     },
-    // profile(profile) {
-    //   return {
-    //     email: profile.email,
-    //     id: profile.sub,
-    //     image: profile.picture,
-    //     name: profile.name ?? profile.email,
-    //   };
-    // },
+    profile(profile) {
+      return {
+        email: profile.email,
+        id: profile.sub,
+        image: profile.picture,
+        name: profile.name ?? profile.email,
+      };
+    },
   }),
 };
 

@@ -5,7 +5,6 @@ import {
 // import { useSession } from 'next-auth/react';
 // import getServerSession from "next-auth";
 // import { config } from '@/libs/next-auth/auth.config';
-import { fromContainerMetadata } from '@aws-sdk/credential-providers';
 // import { fromCognitoIdentityPool } from '@aws-sdk/credential-providers';
 import { experimental_buildLlama2Prompt } from 'ai/prompts';
 
@@ -46,6 +45,7 @@ export class LobeBedrockAI implements LobeRuntimeAI {
         region: this.region,
       });
     } else {
+      const { fromContainerMetadata } = require('@aws-sdk/credential-providers');
       this.client = new BedrockRuntimeClient({
         credentials: fromContainerMetadata({
           maxRetries: 0,
